@@ -178,3 +178,23 @@ export const getSellTokensInstruction = async (
     })
     .instruction();
 };
+
+export const getWithdrawInstruction = async (
+  program: Program<Jpeg>,
+  market: PublicKey,
+  backendWallet: PublicKey,
+  treasury: PublicKey
+) => {
+  const [protocol] = getProtocolPda();
+
+  return await program.methods
+    .withdrawFromMarket()
+    .accounts({
+      protocol: protocol,
+      market: market,
+      backend: backendWallet,
+      treasury: treasury,
+      systemProgram: SystemProgram.programId,
+    })
+    .instruction();
+};

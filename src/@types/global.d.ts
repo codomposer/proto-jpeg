@@ -23,5 +23,6 @@ declare global {
     feePercentage: BN;
     lpTokenMint: BN;
     marketNumber: BN;
+    status: number;
   }
 }

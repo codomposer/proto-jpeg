@@ -2,7 +2,7 @@
 
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import useProgram from "@/hooks/useProgram";
-import { buyTokens, sellTokens } from "@/lib/methods";
+import { buyTokens, sellTokens, withdraw } from "@/lib/methods";
 import { useEffect, useMemo, useState } from "react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import useFetchProtocol from "@/hooks/useFetchProtocol";
@@ -22,6 +22,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { BONDING_CURVE_PARAM_A, BONDING_CURVE_PARAM_B } from "@/config";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Terminal } from "lucide-react";
 
 const MarketsPage = () => {
   const { connection } = useConnection();
@@ -39,6 +41,7 @@ const MarketsPage = () => {
   const [isReadyToBuy, setIsReadyToBuy] = useState(false);
   const [isBuying, setIsBuying] = useState(false);
   const [isSelling, setIsSelling] = useState(false);
+  const [isWithdrawing, setIsWithdrawing] = useState(false);
   const [marketBalance, setMarketBalance] = useState(0);
 
   useEffect(() => {
@@ -145,14 +148,36 @@ const MarketsPage = () => {
   };
 
   const handleWithdraw = async () => {
-    //   if (!program || !protocol || !market) return;
-    //   const res = await withdraw(wallet, program, marketPda, market.winTokenMint);
-    //   if (res) {
-    //     setReload({});
-    //     toast.success("Success");
-    //   } else {
-    //     toast.error("Failed");
-    //   }
+    if (!program || !protocol || !market) return;
+
+    if (wallet.publicKey?.toBase58() !== protocol.backendWallet.toBase58()) {
+      toast.error("You are not authorized to perform this action.");
+      return;
+    }
+
+    setIsWithdrawing(true);
+    try {
+      const res = await withdraw(
+        wallet,
+        program,
+        marketPda,
+        protocol.backendWallet,
+        protocol.treasury
+      );
+      if (res) {
+        setReload({});
+        toast.success("Success");
+      } else {
+        toast.error("Failed");
+      }
+    } catch (error) {
+      console.error("Error withdrawing token:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to withdraw token."
+      );
+    } finally {
+      setIsWithdrawing(false);
+    }
   };
 
   const tokenPrice = useMemo(() => {
@@ -168,18 +193,6 @@ const MarketsPage = () => {
     }
     return 0;
   }, [market]);
-
-  // const handleResolveOutcome = async () => {
-  //   if (!program || !market || !isMarketCreator) return;
-
-  //   const res = await resolveOutcome(wallet, program, marketPda, yesOrNo);
-  //   if (res) {
-  //     setReload({});
-  //     toast.success("Success");
-  //   } else {
-  //     toast.error("Failed");
-  //   }
-  // };
 
   return (
     <div className="flex flex-col gap-2">
@@ -209,7 +222,17 @@ const MarketsPage = () => {
 
       {market && (
         <>
-          {!!isReadyToBuy && <label>It is ready to buy token now.</label>}
+          {!!isReadyToBuy && (
+            <Alert className="w-[300px]">
+              <Terminal className="h-4 w-4" />
+              <AlertTitle>Heads up!</AlertTitle>
+              <AlertDescription>It is ready to withdraw now.</AlertDescription>
+            </Alert>
+          )}
+          <label>Backend wallet: {protocol?.backendWallet.toBase58()}</label>
+          <label>
+            Market status: {market.status === 1 ? "Opened" : "Closed"}
+          </label>
           <label>
             Current Market Balance: {marketBalance / LAMPORTS_PER_SOL}
           </label>
@@ -249,12 +272,12 @@ const MarketsPage = () => {
             </Button>
           </div>
           {isReadyToBuy && (
-            <button
+            <Button
               onClick={handleWithdraw}
-              className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              className="bg-blue-500 text-white rounded w-[130px]"
             >
-              Withdraw
-            </button>
+              {isWithdrawing ? "Withdrawing" : "Withdraw"}
+            </Button>
           )}
         </>
       )}

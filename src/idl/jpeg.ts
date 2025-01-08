@@ -392,6 +392,10 @@ export type Jpeg = {
             "type": "u64"
           },
           {
+            "name": "status",
+            "type": "u8"
+          },
+          {
             "name": "bump",
             "type": "u8"
           }
@@ -565,21 +569,26 @@ export type Jpeg = {
     },
     {
       "code": 6005,
+      "name": "InvalidMarketStatus",
+      "msg": "Market is already closed"
+    },
+    {
+      "code": 6006,
       "name": "InvalidPriceCalculation",
       "msg": "Invalid price calculation"
     },
     {
-      "code": 6006,
+      "code": 6007,
       "name": "UnauthorizedTreasury",
       "msg": "Invalid treasury account"
     },
     {
-      "code": 6007,
+      "code": 6008,
       "name": "InsufficientMarketBalance",
       "msg": "Market balance must be greater than target price + 10% to withdraw"
     },
     {
-      "code": 6008,
+      "code": 6009,
       "name": "UnauthorizedBackendWallet",
       "msg": "The provided backend wallet does not match the protocol's authorized backend wallet"
     }
@@ -980,6 +989,10 @@ export const IDL: Jpeg = {
             "type": "u64"
           },
           {
+            "name": "status",
+            "type": "u8"
+          },
+          {
             "name": "bump",
             "type": "u8"
           }
@@ -1153,21 +1166,26 @@ export const IDL: Jpeg = {
     },
     {
       "code": 6005,
+      "name": "InvalidMarketStatus",
+      "msg": "Market is already closed"
+    },
+    {
+      "code": 6006,
       "name": "InvalidPriceCalculation",
       "msg": "Invalid price calculation"
     },
     {
-      "code": 6006,
+      "code": 6007,
       "name": "UnauthorizedTreasury",
       "msg": "Invalid treasury account"
     },
     {
-      "code": 6007,
+      "code": 6008,
       "name": "InsufficientMarketBalance",
       "msg": "Market balance must be greater than target price + 10% to withdraw"
     },
     {
-      "code": 6008,
+      "code": 6009,
       "name": "UnauthorizedBackendWallet",
       "msg": "The provided backend wallet does not match the protocol's authorized backend wallet"
     }

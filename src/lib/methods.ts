@@ -16,6 +16,7 @@ import {
   getUpdateMarketInstruction,
   getBuyTokensInstruction,
   getSellTokensInstruction,
+  getWithdrawInstruction,
 } from "./instructions";
 import {
   createAssociatedTokenAccountInstruction,
@@ -328,6 +329,52 @@ export async function sellTokens(
     return txSignature;
   } catch (error) {
     console.error("Error in sellTokens:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "An unknown error occurred.";
+    throw new Error(`Transaction failed: ${errorMessage}`);
+  }
+}
+
+export async function withdraw(
+  wallet: WalletContextState,
+  program: Program<Jpeg>,
+  market: PublicKey,
+  backendWallet: PublicKey,
+  treasury: PublicKey
+) {
+  if (!wallet.publicKey) return;
+  try {
+    const transaction = new Transaction();
+    transaction.add(
+      await getWithdrawInstruction(
+        program,
+        market,
+        backendWallet,
+        treasury
+      )
+    );
+
+    const txSignature = await wallet.sendTransaction(
+      transaction,
+      program.provider.connection,
+      {
+        skipPreflight: true,
+      }
+    );
+
+    const latestBlockHash =
+      await program.provider.connection.getLatestBlockhash();
+
+    await program.provider.connection.confirmTransaction({
+      blockhash: latestBlockHash.blockhash,
+      lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+      signature: txSignature,
+    });
+
+    console.log(txSignature);
+    return txSignature;
+  } catch (error) {
+    console.error("Error in withdraw:", error);
     const errorMessage =
       error instanceof Error ? error.message : "An unknown error occurred.";
     throw new Error(`Transaction failed: ${errorMessage}`);
