@@ -21,6 +21,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { BONDING_CURVE_PARAM_A, BONDING_CURVE_PARAM_B } from "@/config";
+import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 
 const MarketsPage = () => {
   const { connection } = useConnection();
@@ -38,6 +39,18 @@ const MarketsPage = () => {
   const [isReadyToBuy, setIsReadyToBuy] = useState(false);
   const [isBuying, setIsBuying] = useState(false);
   const [isSelling, setIsSelling] = useState(false);
+  const [marketBalance, setMarketBalance] = useState(0);
+
+  useEffect(() => {
+    const fetchMarketBalance = async () => {
+      if (marketPda) {
+        const balance = await connection.getBalance(marketPda);
+        setMarketBalance(balance);
+      }
+    };
+
+    fetchMarketBalance();
+  }, [marketPda]);
 
   useEffect(() => {
     const fetchMarketSolBalance = async () => {
@@ -149,7 +162,8 @@ const MarketsPage = () => {
         BONDING_CURVE_PARAM_B;
 
       const adjustedPricePerToken =
-        (basePricePerToken / 1e9) * market.targetPrice.toNumber();
+        (basePricePerToken * market.targetPrice.toNumber()) / 1e9;
+
       return adjustedPricePerToken;
     }
     return 0;
@@ -196,7 +210,12 @@ const MarketsPage = () => {
       {market && (
         <>
           {!!isReadyToBuy && <label>It is ready to buy token now.</label>}
-          <label>Current Supply: {market.currentSupply.toNumber() / 1e9}</label>
+          <label>
+            Current Market Balance: {marketBalance / LAMPORTS_PER_SOL}
+          </label>
+          <label>
+            Current Total Supply: {market.currentSupply.toNumber() / 1e9}
+          </label>
           <label>Price per token: {tokenPrice / 1e9} SOL</label>
           <label>My LP token balance: {lpTokenBalance}</label>
 
