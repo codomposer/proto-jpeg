@@ -6,7 +6,7 @@ export default function RootTemplate({ children }: PropsWithChildren) {
   return (
     <>
       <Header />
-      <main className="max-w-3xl flex flex-col mx-auto">{children}</main>
+      <main className="max-w-3xl flex flex-col mx-auto py-6">{children}</main>
       <Footer />
     </>
   );
